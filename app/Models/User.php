@@ -12,4 +12,9 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password', 'role',
     ];
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';  // Pastikan kolom 'role' ada di database
+    }
 }

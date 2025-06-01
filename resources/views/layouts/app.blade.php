@@ -87,12 +87,13 @@
                         </li>
                     @endif
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('dashboard') }}">
+                        <a class="nav-link" href="{{ route('admin.dashboard') }}">
                             <i class="bi bi-house-door me-1"></i> Dashboard
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <form action="{{ route('logout') }}" method="GET" class="d-inline">
+                    <li class="nav-item">                        
+                        <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                             @csrf
                             <button class="btn btn-sm btn-danger ms-2">Logout</button>
                         </form>
                     </li>

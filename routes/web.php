@@ -1,64 +1,63 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\KendaraanController;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\Auth\UserRegisterController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\User\DashboardController as UserDashboardController;
+use App\Http\Controllers\User\PemesananController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\KendaraanController;
+use App\Http\Controllers\User\KendaraanController as UserKendaraanController;
 use Illuminate\Support\Facades\Auth;
 
-
-// Route untuk halaman utama
+// Halaman utama
 Route::get('/', function () {
     return view('home');
 });
 
 
-// Dashboard untuk admin
-Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->middleware('auth')->name('admin.dashboard');
+// Auth
 
-// Dashboard untuk klien
-Route::get('/klien/dashboard', function () {
-    return view('klien.dashboard');
-})->middleware('auth')->name('klien.dashboard');
-
-
-
-// Resource controller
-Route::resource('/kendaraan', KendaraanController::class);
-
-// Login & Register
-Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
-Route::post('/register', [RegisterController::class, 'register']);
-
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
-Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
-
-
-Route::middleware('auth')->group(function () {
-
-    // Dashboard umum, bisa dihapus jika tidak digunakan
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-
-    // Dashboard berdasarkan role
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
-
-    Route::get('/klien/dashboard', function () {
-        return view('klien.dashboard');
-    })->name('klien.dashboard');
-
-    // Resource Kendaraan hanya untuk admin (jika diinginkan)
-    Route::resource('/kendaraan', KendaraanController::class);
+// Halaman login & register hanya untuk user yang belum login
+Route::middleware('guest')->group(function () {
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::get('register', [UserRegisterController::class, 'create'])->name('register');
+    Route::post('register', [UserRegisterController::class, 'store']);
 });
 
-Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->middleware(['auth', 'admin'])->name('admin.dashboard');
+
+Route::post('logout', function () {
+    Auth::logout();
+    return redirect('/');
+})->name('logout');
+
+// Dashboard User
+Route::middleware(['auth'])->group(function () {
+    Route::get('/user/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
+    Route::get('/user/kendaraan/{id}', [PemesananController::class, 'show'])->name('user.motor.show');
+    Route::post('/user/kendaraan/{id}/pesan', [PemesananController::class, 'pesan'])->name('user.kendaraan.pesan');
+
+
+});
+
+// Dashboard Admin
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    // CRUD kendaraan untuk user/admin umum (ganti sesuai role-mu)
+    Route::resource('admin/kendaraan', KendaraanController::class);
+});
+
+
+// Route untuk detail motor
+Route::middleware(['auth'])->group(function () {
+    Route::get('/user/motor/{id}', [PemesananController::class, 'show'])->name('user.motor.show');
+});
+
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');  // Dashboard admin
+    
+    // Route CRUD untuk motor
+    Route::resource('admin/kendaraan', KendaraanController::class);  // Menangani daftar, tambah, edit, dan hapus motor
+});

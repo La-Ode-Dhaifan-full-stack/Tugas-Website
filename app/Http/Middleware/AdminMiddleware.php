@@ -7,16 +7,12 @@ use Illuminate\Http\Request;
 
 class AdminMiddleware
 {
-    public function handle(Request $request, Closure $next)
+     public function handle(Request $request, Closure $next)
     {
-        if (!auth()->check()) {
-            return redirect()->route('login');
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            return $next($request);
         }
 
-        if (!auth()->user()->isAdmin()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        return $next($request);
+        abort(403, 'Akses ditolak.');
     }
 }

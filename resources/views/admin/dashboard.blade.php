@@ -6,6 +6,7 @@
     </x-slot>
 
     <div class="py-12 px-4">
-        <p>Selamat datang Admin, kamu bisa mengelola data kendaraan di sini.</p>
+        <p>Selamat datang Admin.</p>
+        <p>Selmata Bekerja</p>
     </div>
 </x-app-layout>
